@@ -1,27 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebRTC Video Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Video Chat</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>WebRTC Video Chat</h1>
-  <video id="localVideo" autoplay playsinline muted></video>
-  <video id="remoteVideo" autoplay playsinline></video>
-
-  <div class="controls">
-    <button id="callBtn">In Call</button>
-    <button id="shareScreenBtn">Share Screen</button>
-    <button id="muteBtn">Unmute Mic</button>
-    <button id="cameraBtn">Stop Cam</button>
+  <div id="join-screen">
+    <div class="join-box">
+      <h2>🎥 Video Chat</h2>
+      <input type="text" id="username" placeholder="Your Name" required />
+      <input type="text" id="room" placeholder="Meeting ID" required />
+      <label><input type="checkbox" checked id="videoCheck"> Enable Video</label>
+      <label><input type="checkbox" checked id="audioCheck"> Enable Audio</label>
+      <button onclick="joinCall()">Join Meeting</button>
+    </div>
   </div>
 
-  <div class="chat">
-    <div id="chatBox"></div>
-    <input type="text" id="messageInput" placeholder="Type message...">
-    <button id="sendBtn">Send</button>
+  <div id="chat-screen" class="hidden">
+    <div class="videos">
+      <div id="local"></div>
+      <div id="remote"></div>
+    </div>
+    <div class="controls">
+      <button onclick="toggleMic()">🎙️</button>
+      <button onclick="toggleVideo()">🎥</button>
+      <button onclick="shareScreen()">🖥️</button>
+      <button onclick="leaveCall()">❌</button>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>

@@ -1,80 +1,69 @@
 body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background: #f4f4f4;
   margin: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  font-family: Arial;
+  background: #0d0d1f;
+  color: white;
 }
-h2 { margin-top: 0.5em; }
-.videos {
+
+#join-screen, #chat-screen {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 1;
-  gap: 10px;
-}
-video {
-  width: 45%;
-  max-width: 400px;
-  background: black;
-}
-.controls {
-  margin: 0.5em;
-}
-.controls button {
-  margin: 0 5px;
-  padding: 10px 15px;
-}
-.chat {
-  display: flex;
-  flex-direction: column;
-  max-width: 400px;
-  margin: 0 auto 1em;
-}
-#chatWindow {
-  height: 150px;
-  border: 1px solid #ccc;
-  background: #fff;
-  overflow-y: auto;
-  padding: 5px;
-}
-#chatInput {
-  padding: 10px;
-  margin-top: 5px;
-}
-@media(max-width:600px) {
-  video { width: 90%; }
+  height: 100vh;
 }
 
-body {
+.join-box {
+  background: #1e1e2f;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 300px;
   text-align: center;
-  font-family: sans-serif;
-  background: #f9f9f9;
 }
-video {
-  width: 300px;
-  height: 225px;
-  margin: 5px;
-  border: 2px solid black;
-}
-.controls button {
-  margin: 5px;
+
+.join-box input, .join-box button {
+  width: 100%;
+  margin-top: 10px;
   padding: 10px;
+  border-radius: 5px;
+  border: none;
 }
-.chat {
-  margin-top: 15px;
+
+.join-box button {
+  background: #7b2cbf;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
 }
-#chatBox {
+
+.videos {
+  display: flex;
+  gap: 1rem;
+}
+
+.videos video {
   width: 300px;
-  height: 100px;
-  border: 1px solid #ccc;
-  margin: 5px auto;
-  padding: 5px;
-  overflow-y: auto;
-  background: #fff;
+  height: 220px;
+  border-radius: 10px;
+  background: black;
 }
-#messageInput {
-  width: 200px;
+
+.controls {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #333;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
 }

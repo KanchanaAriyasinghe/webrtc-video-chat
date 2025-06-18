@@ -1,99 +1,98 @@
 const socket = io();
-
-const localVideo = document.getElementById('localVideo');
-const remoteVideo = document.getElementById('remoteVideo');
-const callBtn = document.getElementById('callBtn');
-const shareScreenBtn = document.getElementById('shareScreenBtn');
-const muteBtn = document.getElementById('muteBtn');
-const cameraBtn = document.getElementById('cameraBtn');
-const chatBox = document.getElementById('chatBox');
-const messageInput = document.getElementById('messageInput');
-const sendBtn = document.getElementById('sendBtn');
-
 let localStream;
 let remoteStream;
 let peerConnection;
-let isAudio = true;
-let isVideo = true;
+const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-const config = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-};
+function joinCall() {
+  const username = document.getElementById('username').value;
+  const room = document.getElementById('room').value;
+  const enableVideo = document.getElementById('videoCheck').checked;
+  const enableAudio = document.getElementById('audioCheck').checked;
 
-navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-  .then(stream => {
+  if (!username || !room) return alert('Please fill in all fields.');
+
+  document.getElementById('join-screen').classList.add('hidden');
+  document.getElementById('chat-screen').classList.remove('hidden');
+
+  navigator.mediaDevices.getUserMedia({ video: enableVideo, audio: enableAudio }).then(stream => {
     localStream = stream;
-    localVideo.srcObject = stream;
+    document.getElementById('local').innerHTML = '';
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.muted = true;
+    document.getElementById('local').appendChild(video);
+
+    socket.emit('join', room);
   });
-
-callBtn.onclick = () => {
-  socket.emit('join', 'room');
-};
-
-shareScreenBtn.onclick = async () => {
-  const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-  const screenTrack = screenStream.getVideoTracks()[0];
-  const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-  sender.replaceTrack(screenTrack);
-
-  screenTrack.onended = () => {
-    sender.replaceTrack(localStream.getVideoTracks()[0]);
-  };
-};
-
-muteBtn.onclick = () => {
-  isAudio = !isAudio;
-  localStream.getAudioTracks()[0].enabled = isAudio;
-  muteBtn.innerText = isAudio ? 'Unmute Mic' : 'Mute Mic';
-};
-
-cameraBtn.onclick = () => {
-  isVideo = !isVideo;
-  localStream.getVideoTracks()[0].enabled = isVideo;
-  cameraBtn.innerText = isVideo ? 'Stop Cam' : 'Start Cam';
-};
-
-sendBtn.onclick = () => {
-  const msg = messageInput.value;
-  appendMessage('Me', msg);
-  socket.emit('message', msg);
-  messageInput.value = '';
-};
-
-function appendMessage(sender, msg) {
-  chatBox.innerHTML += `<p><b>${sender}:</b> ${msg}</p>`;
-  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-socket.on('message', msg => appendMessage('Peer', msg));
-
-socket.on('offer', async offer => {
-  peerConnection = createPeerConnection();
-  await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-  const answer = await peerConnection.createAnswer();
-  await peerConnection.setLocalDescription(answer);
-  socket.emit('answer', answer);
-});
-
-socket.on('answer', answer => peerConnection.setRemoteDescription(new RTCSessionDescription(answer)));
-
-socket.on('candidate', candidate => peerConnection.addIceCandidate(new RTCIceCandidate(candidate)));
-
-socket.on('ready', async () => {
-  peerConnection = createPeerConnection();
+socket.on('offer', (id, description) => {
+  peerConnection = new RTCPeerConnection(config);
   localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-  const offer = await peerConnection.createOffer();
-  await peerConnection.setLocalDescription(offer);
-  socket.emit('offer', offer);
+  peerConnection.ontrack = e => {
+    document.getElementById('remote').innerHTML = '';
+    const video = document.createElement('video');
+    video.srcObject = e.streams[0];
+    video.autoplay = true;
+    document.getElementById('remote').appendChild(video);
+  };
+  peerConnection.setRemoteDescription(description).then(() =>
+    peerConnection.createAnswer()
+  ).then(answer => {
+    peerConnection.setLocalDescription(answer);
+    socket.emit('answer', id, answer);
+  });
 });
 
-function createPeerConnection() {
-  const pc = new RTCPeerConnection(config);
-  pc.ontrack = e => {
-    remoteVideo.srcObject = e.streams[0];
+socket.on('answer', description => {
+  peerConnection.setRemoteDescription(description);
+});
+
+socket.on('candidate', candidate => {
+  peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+});
+
+socket.on('ready', id => {
+  peerConnection = new RTCPeerConnection(config);
+  localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+  peerConnection.onicecandidate = e => {
+    if (e.candidate) socket.emit('candidate', id, e.candidate);
   };
-  pc.onicecandidate = e => {
-    if (e.candidate) socket.emit('candidate', e.candidate);
+
+  peerConnection.ontrack = e => {
+    document.getElementById('remote').innerHTML = '';
+    const video = document.createElement('video');
+    video.srcObject = e.streams[0];
+    video.autoplay = true;
+    document.getElementById('remote').appendChild(video);
   };
-  return pc;
+
+  peerConnection.createOffer().then(offer => {
+    peerConnection.setLocalDescription(offer);
+    socket.emit('offer', id, offer);
+  });
+});
+
+function toggleMic() {
+  localStream.getAudioTracks().forEach(t => t.enabled = !t.enabled);
+}
+
+function toggleVideo() {
+  localStream.getVideoTracks().forEach(t => t.enabled = !t.enabled);
+}
+
+function shareScreen() {
+  navigator.mediaDevices.getDisplayMedia({ video: true }).then(screenStream => {
+    const screenTrack = screenStream.getVideoTracks()[0];
+    const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
+    sender.replaceTrack(screenTrack);
+  });
+}
+
+function leaveCall() {
+  if (peerConnection) peerConnection.close();
+  window.location.reload();
 }
