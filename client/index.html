@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WebRTC Video Chat</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>WebRTC Video Chat</h2>
-  <div class="videos">
-    <video id="localVideo" autoplay muted></video>
-    <video id="remoteVideo" autoplay></video>
-  </div>
+  <h1>WebRTC Video Chat</h1>
+  <video id="localVideo" autoplay playsinline muted></video>
+  <video id="remoteVideo" autoplay playsinline></video>
 
   <div class="controls">
-    <button id="startCall">Join Room</button>
-    <button id="shareScreen">Share Screen</button>
-    <button id="toggleMic">Mute Mic</button>
-    <button id="toggleCam">Stop Cam</button>
+    <button id="callBtn">In Call</button>
+    <button id="shareScreenBtn">Share Screen</button>
+    <button id="muteBtn">Unmute Mic</button>
+    <button id="cameraBtn">Stop Cam</button>
   </div>
 
   <div class="chat">
-    <div id="chatWindow"></div>
-    <input id="chatInput" placeholder="Type message..." />
+    <div id="chatBox"></div>
+    <input type="text" id="messageInput" placeholder="Type message...">
+    <button id="sendBtn">Send</button>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
