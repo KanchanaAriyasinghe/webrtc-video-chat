@@ -2,17 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WebRTC Video Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Real-Time Video Chat</h2>
-  <div id="video-container">
+  <h2>WebRTC Video Chat</h2>
+  <div class="videos">
     <video id="localVideo" autoplay muted></video>
     <video id="remoteVideo" autoplay></video>
   </div>
-  <button id="startCall">Start Call</button>
+
+  <div class="controls">
+    <button id="startCall">Join Room</button>
+    <button id="shareScreen">Share Screen</button>
+    <button id="toggleMic">Mute Mic</button>
+    <button id="toggleCam">Stop Cam</button>
+  </div>
+
+  <div class="chat">
+    <div id="chatWindow"></div>
+    <input id="chatInput" placeholder="Type message..." />
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>

@@ -7,30 +7,20 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
+// Serve static client files
 app.use(express.static(path.join(__dirname, '../client')));
 
 io.on('connection', socket => {
-    socket.on('join', room => {
-        socket.join(room);
-        socket.to(room).emit('user-joined', socket.id);
-    });
-
-    socket.on('offer', ({ room, offer }) => {
-        socket.to(room).emit('offer', { id: socket.id, offer });
-    });
-
-    socket.on('answer', ({ room, answer }) => {
-        socket.to(room).emit('answer', { id: socket.id, answer });
-    });
-
-    socket.on('ice-candidate', ({ room, candidate }) => {
-        socket.to(room).emit('ice-candidate', { id: socket.id, candidate });
-    });
-
-    socket.on('disconnect', () => {
-        socket.broadcast.emit('user-left', socket.id);
-    });
+  socket.on('join', room => socket.join(room));
+  socket.on('chat-message', ({ room, msg }) => socket.to(room).emit('chat-message', { msg }));
+  socket.on('offer', data => socket.to(data.room).emit('offer', data));
+  socket.on('answer', data => socket.to(data.room).emit('answer', data));
+  socket.on('ice-candidate', data => socket.to(data.room).emit('ice-candidate', data));
+  socket.on('disconnecting', () => {
+    const rooms = socket.rooms;
+    rooms.forEach(room => socket.to(room).emit('user-left'));
+  });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
