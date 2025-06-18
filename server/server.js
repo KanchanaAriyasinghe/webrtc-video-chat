@@ -1,26 +1,22 @@
 const express = require('express');
 const http = require('http');
-const socketIO = require('socket.io');
-const path = require('path');
-
+const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = new Server(server);
 
-// Serve static client files
-app.use(express.static(path.join(__dirname, '../client')));
+app.use(express.static('client'));
 
 io.on('connection', socket => {
-  socket.on('join', room => socket.join(room));
-  socket.on('chat-message', ({ room, msg }) => socket.to(room).emit('chat-message', { msg }));
-  socket.on('offer', data => socket.to(data.room).emit('offer', data));
-  socket.on('answer', data => socket.to(data.room).emit('answer', data));
-  socket.on('ice-candidate', data => socket.to(data.room).emit('ice-candidate', data));
-  socket.on('disconnecting', () => {
-    const rooms = socket.rooms;
-    rooms.forEach(room => socket.to(room).emit('user-left'));
+  socket.on('join', room => {
+    socket.join(room);
+    socket.to(room).emit('ready');
+
+    socket.on('offer', offer => socket.to(room).emit('offer', offer));
+    socket.on('answer', answer => socket.to(room).emit('answer', answer));
+    socket.on('candidate', candidate => socket.to(room).emit('candidate', candidate));
+    socket.on('message', msg => socket.to(room).emit('message', msg));
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
+server.listen(3000, () => console.log('Server running on http://localhost:3000'));
